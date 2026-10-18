@@ -18,12 +18,12 @@ let score = 0;
 
 let ship = world.spawn(new Ship(GAME_WIDTH / 2, GAME_HEIGHT / 2));
 
-// Спав стартові астероїди
+// Спавн початкових астероїдів
 for (let i = 0; i < 5; i++) {
   world.spawn(new Asteroid(Math.random() * GAME_WIDTH, Math.random() * GAME_HEIGHT));
 }
 
-// Спавн бонус
+// Спавн бонусу
 world.spawn(new Pickup(200, 200));
 
 let respawnTimer = 0;
@@ -31,17 +31,23 @@ let respawnTimer = 0;
 const loop = createLoop({
   step: 1 / 60,
   simulate: (dt) => {
-    // постріли
+    // 1. Постійний спавн астероїдів (якщо їх менше 5)
+    const asteroidCount = [...world.ofKind("asteroid")].length;
+    if (asteroidCount < 5) {
+      world.spawn(new Asteroid(Math.random() * GAME_WIDTH, Math.random() * GAME_HEIGHT));
+    }
+
+    // 2. Логіка корабля (постріли та керування)
     if (ship && ship.alive) {
       if (input.justPressed("Space")) {
         world.spawn(ship.fire());
       }
-      if (input.justPressed("KeyH")) { // Homing bullet на клавишу H
+      if (input.justPressed("KeyH")) { // Самонавідна куля на клавішу H
         world.spawn(ship.fireHoming());
       }
       ship.integrate(input, dt);
     } else if (!ship || !ship.alive) {
-      // Респавн через 2 сек
+      // 3. Респаун корабля через 2 секунди після смерті
       respawnTimer += dt;
       if (respawnTimer >= 2.0) {
         respawnTimer = 0;
@@ -49,7 +55,7 @@ const loop = createLoop({
       }
     }
 
-    // Обновлюємо усі сутности
+    // 4. Оновлення всіх сутностей (пуль, астероїдів тощо)
     for (const e of world) {
       if (e.kind === "bullet") {
         e.update(dt, world);
@@ -57,17 +63,17 @@ const loop = createLoop({
         e.update(dt);
       }
 
-      // Завертання країв
+      // 5. Загортання країв екрана для всіх об'єктів
       if (e.pos.x < 0) e.pos = e.pos.add({ x: GAME_WIDTH, y: 0 });
       if (e.pos.x > GAME_WIDTH) e.pos = e.pos.sub({ x: GAME_WIDTH, y: 0 });
       if (e.pos.y < 0) e.pos = e.pos.add({ x: 0, y: GAME_HEIGHT });
       if (e.pos.y > GAME_HEIGHT) e.pos = e.pos.sub({ x: 0, y: GAME_HEIGHT });
     }
 
-    // Проверка коллизії
+    // 6. Перевірка колізій (зіткнень)
     resolveCollisions(world, (pts) => { score += pts; });
 
-    // Очистка мертвих об'єктов
+    // 7. Очищення мертвих об'єктів
     world.sweep();
   },
   render: (alpha, stats) => {

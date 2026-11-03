@@ -1,0 +1,5 @@
+[
+  { "id": "room-1", "name": "Альфа Орбіта", "players": 2, "maxPlayers": 4 },
+  { "id": "room-2", "name": "Астероїдний Пояс", "players": 1, "maxPlayers": 2 },
+  { "id": "room-3", "name": "Тренувальний Полігон", "players": 0, "maxPlayers": 4 }
+]

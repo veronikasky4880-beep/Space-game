@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Dogfight</title>
+  <style>
+    /* Забороняємо прокрутку сторінки та фіксуємо чорний фон на весь екран */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: white;
+      font-family: monospace;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #game-container {
+      position: relative;
+      width: 800px;
+      height: 600px;
+    }
+    canvas {
+      display: block;
+      border: 2px solid #444;
+      background: #000;
+    }
+    #lobby-ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 20px;
+      z-index: 10;
+    }
+    .hidden {
+      display: none !important;
+    }
+    input, button {
+      font-family: monospace;
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #444;
+    }
+    .room-item {
+      background: #1a1a1a;
+      border: 1px solid #444;
+      padding: 10px;
+      margin: 5px 0;
+      width: 320px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game"></canvas>
+    
+    <!-- Інтерфейс Екрана Лоббі -->
+    <div id="lobby-ui">
+      <h2>ГОЛОВНЕ ЛОББІ ГРИ</h2>
+      <div style="margin-bottom: 15px;">
+        <label>Ім'я гравця: </label>
+        <input type="text" id="player-name" value="Пілот 1" />
+      </div>
+      <h3>Доступні кімнати:</h3>
+      <div id="rooms-list">Завантаження кімнат...</div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

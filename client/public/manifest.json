@@ -1,0 +1,12 @@
+{
+  "images": [
+    "/sprites/ship.png",
+    "/sprites/asteroid.png",
+    "/sprites/bullet.png"
+  ],
+  "sounds": [
+    "/sounds/shoot.wav",
+    "/sounds/explosion.wav"
+  ],
+  "data": []
+} 

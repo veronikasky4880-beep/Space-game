@@ -1,0 +1,11 @@
+{
+  "name": "server",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "dev": "node --watch --env-file=.env src/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

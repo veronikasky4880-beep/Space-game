@@ -67,7 +67,7 @@ Entity
       └── Pickup
 
 
-## Lab 03 — Asynchronous JavaScript: Promises, async/await, and the Loading Screen
+### Lab 03 — Asynchronous JavaScript: Promises, async/await, and the Loading Screen
 
 ### Опис проєкту
 У цій лабораторній роботі було реалізовано асинхронний шар для завантаження ресурсів, веб-аудіо та мережевого лоббі гри:
@@ -76,7 +76,6 @@ Entity
 - **Шина подій (Decoupling)**: Ігровий двигун (`World`) не імпортує аудіомодуль чи HUD напрямую — зв'язок реалізовано через шину подій `EventTarget` та `CustomEvent` (`"fired"`, `"hit"`, `"exploded"`).
 - **HTTP Лоббі**: Клас `Lobby extends EventTarget` виконує періодичний опитування (polling) списку кімнат по `GET /api/rooms` із автоматичним скасуванням неактуальних запитів через `AbortController` та таймаутами `AbortSignal.timeout`.
 
----
 
 ### Порівняння завантаження: Sequential await vs Concurrent Promise.all
 

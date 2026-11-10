@@ -1,5 +1,5 @@
 {
-  "name": "dogfight",
+  "name": "client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "dependencies": {
+    "shared": "*"
   },
   "devDependencies": {
     "vite": "^8.3.0"

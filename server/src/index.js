@@ -7,8 +7,10 @@ import { WebSocketServer } from "ws";
 import { config } from "./config.js";
 import { RoomManager } from "./rooms.js";
 import { createMatchLogger } from "./matchlog.js";
+import { Match } from "./match.js";
 
 const roomManager = new RoomManager();
+const matches = new Map(); // Зберігаємо екземпляри симуляцій ігрових кімнат
 
 // Ініціалізуємо логування подій для кімнат
 for (const room of roomManager.rooms.values()) {
@@ -81,10 +83,12 @@ const wss = new WebSocketServer({
 });
 
 wss.on("connection", (socket) => {
+  socket.binaryType = "arraybuffer"; // Увімкнення бінарного режиму для передачі DataView кадрів
   let currentRoom = null;
+  let currentMatch = null;
   socket.isAlive = true;
 
-  // Лімітер повідомлень (Token Bucket: max 10 повідомлень на секунду)
+  // Лімітер повідомлень (Token Bucket: max 30 повідомлень на секунду для ігрового інпуту)
   let msgCount = 0;
   const rateLimitInterval = setInterval(() => {
     msgCount = 0;
@@ -103,27 +107,52 @@ wss.on("connection", (socket) => {
   socket.on("message", (rawMessage) => {
     // 1. Захист від Спаму (Rate limit)
     msgCount++;
-    if (msgCount > 10) {
+    if (msgCount > 60) {
       console.warn("Перевищено ліміт повідомлень. Закриваємо сокет.");
       socket.close(1008, "Rate limit exceeded");
       return;
     }
 
     // 2. Захист від повільного клієнта (Backpressure check через bufferedAmount)
-    if (socket.bufferedAmount > 65536) { // 64 KB у черзі на відправку
+    if (socket.bufferedAmount > 65536) {
       console.warn("Клієнт не встигає зчитувати дані. Відключаємо.");
       socket.close(1008, "Buffer overflow");
       return;
     }
 
+    // 3. Обробка бінарних даних (команди керування input від клієнта)
+    if (rawMessage instanceof ArrayBuffer || Buffer.isBuffer(rawMessage)) {
+      if (currentMatch) {
+        const buffer = rawMessage.buffer.slice(
+          rawMessage.byteOffset, 
+          rawMessage.byteOffset + rawMessage.byteLength
+        );
+        currentMatch.handleInput(socket, buffer);
+      }
+      return;
+    }
+
+    // 4. Обробка текстових JSON повідомлень (вхід у кімнату, чат)
     try {
-      const msg = JSON.parse(rawMessage);
+      const msg = JSON.parse(rawMessage.toString());
 
       if (msg.type === "join") {
         const room = roomManager.getRoom(msg.roomId);
         if (room && room.addPlayer(socket, { name: msg.name })) {
           currentRoom = room;
-          socket.send(JSON.stringify({ type: "joined", roomId: msg.roomId }));
+
+          // Ініціалізація або отримання матчу для цієї кімнати
+          if (!matches.has(msg.roomId)) {
+            matches.set(msg.roomId, new Match(msg.roomId));
+          }
+          currentMatch = matches.get(msg.roomId);
+          const playerId = currentMatch.addPlayer(socket, msg.name);
+
+          socket.send(JSON.stringify({ 
+            type: "joined", 
+            roomId: msg.roomId, 
+            playerId 
+          }));
         } else {
           socket.send(JSON.stringify({ type: "error", message: "Не вдалося приєднатися" }));
         }
@@ -143,6 +172,9 @@ wss.on("connection", (socket) => {
 
   socket.on("close", () => {
     clearInterval(rateLimitInterval);
+    if (currentMatch) {
+      currentMatch.removePlayer(socket);
+    }
     if (currentRoom) {
       currentRoom.removePlayer(socket);
     }
@@ -165,7 +197,7 @@ wss.on("close", () => {
   clearInterval(heartbeatInterval);
 });
 
-// 3. Graceful Shutdown (Завершення за SIGINT / SIGTERM з кодом 0)
+// Graceful Shutdown (Завершення за SIGINT / SIGTERM з кодом 0)
 const shutdown = () => {
   console.log("\nОтримано сигнал зупинки. Закриваємо з'єднання...");
   clearInterval(heartbeatInterval);

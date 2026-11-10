@@ -43,6 +43,8 @@ export class Lobby extends EventTarget {
     const wsUrl = `${protocol}//${window.location.host}/ws`;
 
     this.socket = new WebSocket(wsUrl);
+    // Встановлюємо бінарний тип для обробки ArrayBuffer знімків (Lab 5)
+    this.socket.binaryType = "arraybuffer";
 
     this.socket.onopen = () => {
       console.log("WebSocket підключено");
@@ -55,6 +57,13 @@ export class Lobby extends EventTarget {
     };
 
     this.socket.onmessage = (event) => {
+      // 1. Обробка бінарних кадрів знімків (Snapshot)
+      if (event.data instanceof ArrayBuffer) {
+        this.dispatchEvent(new CustomEvent("binarySnapshot", { detail: event.data }));
+        return;
+      }
+
+      // 2. Обробка текстових JSON повідомлень (вхід, чат)
       try {
         const msg = JSON.parse(event.data);
         console.log("Отримано від сервера:", msg);

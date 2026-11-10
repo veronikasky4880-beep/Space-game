@@ -12,6 +12,9 @@
     "shared": "*"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2",
     "vite": "^8.3.0"
   }
 }

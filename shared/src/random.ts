@@ -1,4 +1,3 @@
-// Mulberry32 — генератор псевдовипадкових чисел з фіксованим seed
 export function createPRNG(seed = 123456789) {
   let s = seed;
   return function random() {
